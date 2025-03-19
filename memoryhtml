@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Memory Game</title>
+  <style>
+    body {
+      /* Added background styles here */
+      background-image: url('background.jpg'); /* Make sure the path is correct */
+      background-size: cover;
+      background-position: center;
+      font-family: sans-serif; /* Added a default font */
+      margin: 0; /* Reset default body margin */
+      display: flex; /* For centering the game board */
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start; /* Align items to the start (top) */
+      min-height: 100vh; /* Ensure full viewport height */
+    }
+
+    #gameBoard {
+      display: grid;
+      grid-template-columns: repeat(4, 100px);
+      gap: 10px;
+      margin: 20px auto;
+      width: 420px;
+      padding: 20px; /* Add padding around the board */
+      background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent white background for the board */
+      border-radius: 10px; /* Rounded corners for the board */
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for the board */
+    }
+
+    .card {
+      width: 100px;
+      height: 150px;
+      perspective: 1000px;
+    }
+
+    .card-inner {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transition: transform 0.6s;
+      transform-style: preserve-3d;
+    }
+
+    .card.flipped .card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .card-front, .card-back {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      backface-visibility: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 5px; /* Added rounded corners to card faces */
+      border: 1px solid #ccc; /* Added a border to card faces */
+    }
+
+    .card-front {
+      background-color: #eee;
+      /* border: 1px solid #ccc;  Removed duplicate border */
+    }
+
+    .card-back {
+      background-size: cover;
+      background-position: center;
+      transform: rotateY(180deg);
+      color: white;
+      text-align: center;
+      font-size: 1.2em;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    }
+  </style>
+</head>
+<body>
+  <div id="gameBoard"></div>
+  <script>
+    const cardData = [
+      { value: "2015", image: "image1.jpg" },
+      { value: "2016", image: "image2.jpg" },
+      { value: "2017", image: "image3.jpg" },
+      { value: "2018", image: "image4.jpg" },
+      { value: "2019", image: "image5.jpg" },
+      { value: "2020", image: "image6.jpg" },
+      { value: "2021", image: "image7.jpg" },
+      { value: "2022", image: "image8.jpg" },
+      { value: "2023", image: "image9.jpg" },
+      { value: "2024", image: "image10.jpg" },
+    ];
+
+    const gameCards = [...cardData, ...cardData];
+
+    function shuffleCards(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    shuffleCards(gameCards);
+
+    let flippedCards = [];
+    let matchedCards = [];
+
+    function createBoard() {
+      const gameBoard = document.getElementById("gameBoard");
+      gameCards.forEach((card, index) => {
+        const cardElement = document.createElement("div");
+        cardElement.classList.add("card");
+        cardElement.dataset.index = index;
+
+        const cardInner = document.createElement("div");
+        cardInner.classList.add("card-inner");
+
+        const cardFront = document.createElement("div");
+        cardFront.classList.add("card-front");
+
+        const cardBack = document.createElement("div");
+        cardBack.classList.add("card-back");
+        cardBack.style.backgroundImage = `url(${card.image})`;
+        cardBack.innerHTML = `<p>${card.value}</p>`;
+
+        cardInner.appendChild(cardFront);
+        cardInner.appendChild(cardBack);
+        cardElement.appendChild(cardInner);
+        gameBoard.appendChild(cardElement);
+
+        cardElement.addEventListener("click", () => flipCard(index));
+      });
+    }
+
+    function flipCard(index) {
+      const cardElement = document.querySelector(`[data-index="${index}"]`);
+      if (flippedCards.length < 2 && !flippedCards.includes(index) && !matchedCards.includes(index)) {
+        cardElement.classList.add("flipped");
+        flippedCards.push(index);
+
+        if (flippedCards.length === 2) {
+          setTimeout(checkMatch, 500);
+        }
+      }
+    }
+
+    function checkMatch() {
+      const card1Index = flippedCards[0];
+      const card2Index = flippedCards[1];
+      const card1 = gameCards[card1Index];
+      const card2 = gameCards[card2Index];
+
+      if (card1.value === card2.value) {
+        matchedCards.push(card1Index, card2Index);
+        if (matchedCards.length === gameCards.length) {
+          alert("Congratulations! You matched all the cards!");
+        }
+      } else {
+        const card1Element = document.querySelector(`[data-index="${card1Index}"]`);
+        const card2Element = document.querySelector(`[data-index="${card2Index}"]`);
+        card1Element.classList.remove("flipped");
+        card2Element.classList.remove("flipped");
+      }
+
+      flippedCards = [];
+    }
+
+    createBoard();
+  </script>
+</body>
+</html>
